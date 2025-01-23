@@ -1,0 +1,15 @@
+### get all users
+
+GET http://localhost:3000/students
+
+### add new student
+POST http://localhost:3000/students
+Content-Type: application/json
+
+{
+  "name": "Vados",
+  "email": "ihor_123@gmail.com"
+}
+
+### get specific user
+GET http://localhost:3000/students/570
