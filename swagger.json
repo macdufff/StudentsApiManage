@@ -1,0 +1,619 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "1.0.0",
+    "title": "API Documentation",
+    "description": "Документація для вашого API"
+  },
+  "host": "localhost:3000",
+  "basePath": "/",
+  "schemes": ["http"],
+  "tags": [
+    {
+      "name": "Auth",
+      "description": "Операції для реєстрації та аутентифікації користувачів"
+    },
+    {
+      "name": "User",
+      "description": "Операції для роботи з профілем користувачів"
+    },
+    {
+      "name": "Students",
+      "description": "Операції для управління студентами"
+    }
+  ],
+  "securityDefinitions": {
+    "Bearer": {
+      "type": "apiKey",
+      "name": "Authorization",
+      "in": "header",
+      "description": "Bearer [JWT token]"
+    }
+  },
+  "security": [
+    {
+      "Bearer": []
+    }
+  ],
+  "paths": {
+    "/api/register": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Реєстрація нового користувача",
+        "description": "Реєструє нового користувача з email, username та паролем.",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "user",
+            "description": "Дані для реєстрації",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "email": {
+                  "type": "string",
+                  "format": "email",
+                  "description": "Адреса електронної пошти користувача"
+                },
+                "username": { "type": "string" },
+                "password": { "type": "string" }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Реєстрація успішна",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": { "type": "string" },
+                "accessToken": { "type": "string" }
+              }
+            }
+          },
+          "400": {
+            "description": "Користувач уже існує"
+          },
+          "422": {
+            "description": "Невірний формат email"
+          },
+          "default": {
+            "description": "Невідома помилка"
+          }
+        }
+      }
+    },
+    "/api/signin": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Аутентифікація користувача",
+        "description": "Аутентифікує користувача за допомогою email та паролю.",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "credentials",
+            "description": "Дані для входу",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "email": { "type": "string" },
+                "password": { "type": "string" }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успішний вхід",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "user": {
+                  "type": "object",
+                  "properties": {
+                    "email": { "type": "string" },
+                    "username": { "type": "string" }
+                  }
+                },
+                "accessToken": { "type": "string" }
+              }
+            }
+          },
+          "400": {
+            "description": "Невірні дані для входу"
+          },
+          "default": {
+            "description": "Невідома помилка"
+          }
+        }
+      }
+    },
+    "/api/deleteAccount/{id}": {
+      "delete": {
+        "tags": ["Auth"],
+        "summary": "Видалення акаунту користувача за ID",
+        "description": "Видаляє акаунт користувача за вказаним ID. Доступ лише для адміністраторів.",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Authorization",
+            "required": true,
+            "description": "Токен доступу користувача (Bearer token)",
+            "schema": {
+              "type": "string",
+              "example": "Bearer <JWT token>"
+            }
+          },
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "description": "ID користувача, акаунт якого потрібно видалити",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Акаунт успішно видалений",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": { "type": "string" }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Користувач не має прав на видалення акаунту"
+          },
+          "404": {
+            "description": "Користувач з вказаним ID не знайдений"
+          },
+          "500": {
+            "description": "Внутрішня помилка сервера"
+          }
+        }
+      }
+    },
+    "/api/usersAll": {
+      "get": {
+        "tags": ["User"],
+        "summary": "Отримати всіх користувачів",
+        "description": "Отримує список всіх користувачів.",
+        "responses": {
+          "200": {
+            "description": "Успішно отримано всіх користувачів",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "users": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "description": "ID користувача"
+                          },
+                          "username": {
+                            "type": "string",
+                            "description": "Ім'я користувача"
+                          },
+                          "email": {
+                            "type": "string",
+                            "description": "Електронна пошта користувача"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Помилка сервера"
+          }
+        }
+      }
+    },    
+    "/api/updateProfile": {
+      "put": {
+        "tags": ["User"],
+        "summary": "Оновлення профілю користувача",
+        "description": "Оновлює дані профілю користувача, включаючи email, username та password.",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Authorization",
+            "required": true,
+            "description": "Токен доступу користувача (Bearer token)",
+            "schema": {
+              "type": "string",
+              "example": "Bearer <JWT token>"
+            }
+          },
+          {
+            "in": "body",
+            "name": "profileUpdate",
+            "description": "Дані для оновлення профілю",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "userId": { "type": "string" },
+                "email": { "type": "string" },
+                "username": { "type": "string" },
+                "password": { "type": "string" }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Профіль успішно оновлено",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": { "type": "string" },
+                    "user": {
+                      "type": "object",
+                      "properties": {
+                        "email": { "type": "string" },
+                        "username": { "type": "string" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Необхідний ID користувача"
+          },
+          "404": {
+            "description": "Користувача не знайдено"
+          },
+          "500": {
+            "description": "Помилка оновлення профілю"
+          },
+          "default": {
+            "description": "Невідома помилка"
+          }
+        }
+      }
+    },    
+    "/api/students": {
+      "get": {
+        "tags": ["Students"],
+        "summary": "Отримати список студентів",
+        "description": "Повертає список усіх студентів.",
+        "responses": {
+          "200": {
+            "description": "Список студентів",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": { "type": "string" },
+                  "name": { "type": "string" },
+                  "age": { "type": "integer" },
+                  "email": { "type": "string" }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Помилка сервера"
+          }
+        }
+      }
+    },
+    "/api/students/{id}": {
+      "put": {
+        "tags": ["Students"],
+        "summary": "Оновлення студента за ID",
+        "description": "Оновлює дані студента за вказаним ID. Вимагає автентифікацію користувача через Bearer токен.",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Authorization",
+            "required": true,
+            "description": "Токен доступу користувача (Bearer token)",
+            "schema": {
+              "type": "string",
+              "example": "Bearer <your-token-here>"
+            }
+          },
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "description": "ID студента, якого потрібно оновити",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "body",
+            "name": "studentData",
+            "description": "Дані для оновлення студента",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "description": "Ім'я студента"
+                },
+                "email": {
+                  "type": "string",
+                  "description": "Електронна пошта студента"
+                },
+                "age": {
+                  "type": "integer",
+                  "description": "Вік студента"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Студента успішно оновлено",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "student": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string"
+                        },
+                        "email": {
+                          "type": "string"
+                        },
+                        "age": {
+                          "type": "integer"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Некоректні дані"
+          },
+          "404": {
+            "description": "Студента не знайдено"
+          },
+          "500": {
+            "description": "Помилка на сервері"
+          }
+        }
+      }
+    },    
+    "/api/studentsAll": {
+      "get": {
+        "tags": ["Students"],
+        "summary": "Отримання всіх студентів",
+        "description": "Отримує список всіх студентів.",
+        "responses": {
+          "200": {
+            "description": "Список студентів отримано успішно",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "students": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "name": {
+                            "type": "string",
+                            "description": "Ім'я студента"
+                          },
+                          "email": {
+                            "type": "string",
+                            "description": "Електронна пошта студента"
+                          },
+                          "age": {
+                            "type": "integer",
+                            "description": "Вік студента"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Помилка на сервері"
+          }
+        }
+      }
+    },    
+    "/api/studentsbyId/{id}": {
+      "get": {
+        "tags": ["Students"],
+        "summary": "Отримати студента за ID",
+        "description": "Повертає інформацію про студента за його ID.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "ID студента"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Інформація про студента",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "id": { "type": "string" },
+                "name": { "type": "string" },
+                "age": { "type": "integer" },
+                "email": { "type": "string" }
+              }
+            }
+          },
+          "404": {
+            "description": "Студента не знайдено"
+          },
+          "500": {
+            "description": "Помилка сервера"
+          }
+        }
+      },
+      "/api/students/{id}": {
+        "delete": {
+          "tags": ["Students"],
+          "summary": "Видалити студента",
+          "description": "Видаляє студента за його ID. Для виконання необхідно надати токен доступу.",
+          "parameters": [
+            {
+              "name": "Authorization",
+              "in": "header",
+              "required": true,
+              "description": "Токен доступу користувача (Bearer token)",
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "id",
+              "in": "path",
+              "required": true,
+              "description": "ID студента, якого потрібно видалити",
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Студента успішно видалено",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string",
+                        "example": "Студента успішно видалено"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "404": {
+              "description": "Студента не знайдено"
+            },
+            "500": {
+              "description": "Помилка сервера"
+            }
+          }
+        }
+      },      
+      "/api/students": {
+        "get": {
+          "tags": ["Students"],
+          "summary": "Отримати список студентів",
+          "description": "Повертає список всіх студентів з бази даних.",
+          "responses": {
+            "200": {
+              "description": "Успішно отримано список студентів",
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "students": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "_id": { "type": "string", "description": "ID студента" },
+                        "name": { "type": "string", "description": "Ім'я студента" },
+                        "age": { "type": "integer", "description": "Вік студента" },
+                        "group": { "type": "string", "description": "Група студента" }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Помилка сервера"
+            }
+          }
+        }
+      },
+    "/api/students": {
+      "post": {
+        "tags": ["Students"],
+        "summary": "Додати нового студента",
+        "description": "Додає нового студента до списку.",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "student",
+            "description": "Дані студента",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "name": { "type": "string" },
+                "age": { "type": "integer" },
+                "email": { "type": "string" }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Студента успішно додано",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "id": { "type": "string" },
+                "message": { "type": "string" }
+              }
+            }
+          },
+          "400": {
+            "description": "Невірні дані"
+          },
+          "500": {
+            "description": "Помилка сервера"
+          }
+        }
+      }
+    }
+  }
+}}
